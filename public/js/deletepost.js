@@ -1,26 +1,39 @@
-async function deleteFormHandler(event) {
+document.querySelector("#update").addEventListener("click",event=>{
     event.preventDefault();
-
-    const id = window.location.toString().split('/')[
-        window.location.toString().split('/').length - 1
-      ];
-      
-      const response = await fetch(`/api/posts/${id}`, {
-        method: 'DELETE',
-        body: JSON.stringify({
-          post_id: id
-        }),
-        headers: {
-          'Content-Type': 'application/json'
+    const blogId = document.querySelector("#hiddenBlogId").value;
+    const editBlog = {
+        title:document.querySelector("#editedTitle").value,
+        content:document.querySelector("#editedContent").value,
+    }
+    console.log(blogId);
+    console.log(editBlog);
+    fetch((`/api/blogs/${blogId}`),{
+        method:"PUT",
+        body:JSON.stringify(editBlog),
+        headers:{
+            "Content-Type":"application/json"
         }
-      });
-      
-      if (response.ok) {
-        document.location.replace('/dashboard/');
-      } else {
-        alert(response.statusText);
-      }
-      
-}
+    }).then(res=>{
+        if(res.ok){
+            console.log("blog updated")
+            location.href="/dashboard"
+        } else {
+            alert("please try again")
+        }
+    })
+})
 
-document.querySelector('.delete-post-btn').addEventListener('click', deleteFormHandler);
+document.querySelector("#delete").addEventListener("click",event=>{
+    event.preventDefault();
+    const blogId = document.querySelector("#hiddenBlogId").value;
+    fetch((`/api/blogs/${blogId}`),{
+        method:"DELETE",
+    }).then(res=>{
+        if(res.ok){
+            console.log("blog deleted")
+            location.href="/dashboard"
+        } else {
+            alert("please try again")
+        }
+    })
+})

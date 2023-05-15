@@ -1,25 +1,47 @@
-async function newFormHandler(event) {
-    event.preventDefault();
-  
-    const title = document.querySelector('input[name="post-title"]').value;
-    const content = document.querySelector('input[name="content"]').value;
-  
-    const response = await fetch(`/api/posts`, {
-      method: 'POST',
-      body: JSON.stringify({
-        title,
-        content
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-  
-    if (response.ok) {
-      document.location.replace('/dashboard');
-    } else {
-      alert(response.statusText);
+var existingBlogs = document.querySelector("#existingblogs")
+var createNew = document.querySelector("#createNew")
+var newPost = document.querySelector("#newpost")
+var newBlog = document.querySelector('#newBlog')
+
+function hideCreateNew() {
+    createNew.hidden=true;
+}
+
+hideCreateNew();
+
+newPost.addEventListener("submit",event=>{
+    event.preventDefault()
+    console.log('click')
+    existingBlogs.hidden=true;
+    newPost.hidden =true;
+    createNew.hidden =false;
+});
+
+newBlog.addEventListener("submit", event => {
+    var title = document.querySelector("#title").value;
+    var content = document.querySelector("#content").value
+    event.preventDefault()
+    console.log('you clicked me')
+    if (!title || !content) {
+        alert('Please enter both title and content')
+        return;
     }
-  };
-  
-document.querySelector('#new-post-form').addEventListener('submit', newFormHandler);
+    const blogObj = {
+        title: title,
+        content: content,
+    }
+    fetch("/api/blogs",{
+        method:"POST",
+        body:JSON.stringify(blogObj),
+        headers:{
+            "Content-Type":"application/json"
+        }
+    }).then(res=>{
+        if(res.ok){
+            createNew.setAttribute("hidden", "false")
+            location.reload()
+        } else {
+            alert("Error - please try again")
+        }
+    })
+})
