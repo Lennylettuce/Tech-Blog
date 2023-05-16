@@ -1,129 +1,60 @@
-const sequelize = require('../config/connection');
-const { Post, User, Comment } = require('../models');
-const router = require('express').Router();
+const express = require('express');
+const router = express.Router();
+const {User, Post, Comment} = require('../models');
+
 router.get('/', (req, res) => {
-    Post.findAll({
-            attributes: [
-                'id',
-                'title',
-                'content',
-                'created_at'
-            ],
-            include: [{
-                    model: Comment,
-                    attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-                    include: {
-                        model: User,
-                        attributes: ['username']
-                    }
-                },
-                {
-                    model: User,
-                    attributes: ['username']
-                }
-            ]
-        })
-        .then(dbPostData => {
-            const posts = dbPostData.map(post => post.get({ plain: true }));
-            res.render('homepage', { posts, loggedIn: req.session.loggedIn });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json(err);
-        });
-});
+    Post.findAll({include: [User]}).then(posts => {
+        const hbsPosts = posts.map(post=>post.get({plain:true}))
+        const loggedIn = req.session.user?true:false;
+        res.render('home', {posts:hbsPosts, loggedIn, username:req.session.user?.username})
+    })
+})
 
-router.get('/login', (req, res) => {
-    if (req.session.loggedIn) {
-        res.redirect('/');
-        return;
+router.get("/login",(req,res)=>{
+    if(req.session.user){
+        return res.redirect("/dashboard")
     }
-    res.render('login');
-});
+    res.render("login")
+})
 
-router.get('/signup', (req, res) => {
-    res.render('signup');
-});
+router.get("/signup",(req,res)=>{
+    res.render("signup")
+})
 
-router.get('/post/:id', (req, res) => {
-    Post.findOne({
-            where: {
-                id: req.params.id
-            },
-            attributes: [
-                'id',
-                'content',
-                'title',
-                'created_at'
-            ],
-            include: [{
-                    model: Comment,
-                    attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-                    include: {
-                        model: User,
-                        attributes: ['username']
-                    }
-                },
-                {
-                    model: User,
-                    attributes: ['username']
-                }
-            ]
-        })
-        .then(dbPostData => {
-            if (!dbPostData) {
-                res.status(404).json({ message: 'No post found with this id' });
-                return;
-            }
-            const post = dbPostData.get({ plain: true });
-            console.log(post);
-            res.render('single-post', { post, loggedIn: req.session.loggedIn });
+router.get("/dashboard",(req,res)=>{
+    if(!req.session.user) {
+        return res.redirect('/login')
+    }
+    User.findByPk(req.session.user.id, {
+        include: [Post, Comment]
+    }).then(userData => {
+        const hbsData = userData.get({plain:true})
+        hbsData.loggedIn = req.session.user?true:false
+        res.render("dashboard", hbsData)
+    })
+})
 
+router.get("/posts/:id", (req, res) =>{
+    if(!req.session.user) {
+        return res.redirect('/login')
+    }
+    Post.findByPk(req.params.id,{include:[User, {model: Comment, include: [User]}]})
+    .then(dbPost => {
+        const hbsPost = dbPost.get({plain:true})
+        const loggedIn = req.session.user?true:false;
+        if (dbPost.userId != req.session.user.id) {
+            return res.render('comment', {hbsPost: hbsPost, loggedIn, username:req.session.user?.username})
+        }
+        res.render("updateDelete", {hbsPost: hbsPost, loggedIn, username:req.session.user?.username})
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ msg: "an error occured", err });
+      });
+})
 
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json(err);
-        });
-});
-router.get('/posts-comments', (req, res) => {
-    Post.findOne({
-            where: {
-                id: req.params.id
-            },
-            attributes: [
-                'id',
-                'content',
-                'title',
-                'created_at'
-            ],
-            include: [{
-                    model: Comment,
-                    attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-                    include: {
-                        model: User,
-                        attributes: ['username']
-                    }
-                },
-                {
-                    model: User,
-                    attributes: ['username']
-                }
-            ]
-        })
-        .then(dbPostData => {
-            if (!dbPostData) {
-                res.status(404).json({ message: 'No post found with this id' });
-                return;
-            }
-            const post = dbPostData.get({ plain: true });
-
-            res.render('posts-comments', { post, loggedIn: req.session.loggedIn });
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json(err);
-        });
-});
+router.get("*",(req,res)=>{
+    res.redirect("/")
+})
 
 module.exports = router;

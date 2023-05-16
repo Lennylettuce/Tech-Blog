@@ -1,76 +1,79 @@
-const router = require('express').Router();
-const { Comment } = require('../../models');
-const withAuth = require('../../utils/auth');
-router.get('/', (req, res) => {
-    Comment.findAll({})
-        .then(dbCommentData => res.json(dbCommentData))
-        .catch(err => {
-            console.log(err);
-            res.status(500).json(err);
-        })
+const express = require("express");
+const router = express.Router();
+const {User, Post, Comment} = require("../../models");
+
+router.get("/", (req, res) => {
+    Comment.findAll({include:[User, Blog]})
+      .then(comments => {
+        res.json(comments);
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ msg: "an error occured", err });
+      });
+  });
+
+router.get("/:id", (req, res) => {
+    Comment.findByPk(req.params.id,{include:[User, Blog]})
+      .then(comments => {
+        res.json(comments);
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ msg: "an error occured", err });
+      });
 });
 
-router.get('/:id', (req, res) => {
-    Comment.findAll({
-            where: {
-                id: req.params.id
-            }
-        })
-        .then(dbCommentData => res.json(dbCommentData))
-        .catch(err => {
-            console.log(err);
-            res.status(500).json(err);
-        })
+router.post("/", (req, res) => {
+    if(!req.session.user){
+      return res.status(401).json({msg:"Please login first!"})
+  }
+    Comment.create({
+      comment_text:req.body.body,
+      userId:req.session.user.id,
+      postId:req.body.postId
+    })
+      .then(newComment => {
+        res.json(newComment);
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({ msg: "an error occured", err });
+      });
 });
 
-router.post('/', withAuth, (req, res) => {
-    if (req.session) {
-        Comment.create({
-                comment_text: req.body.comment_text,
-                post_id: req.body.post_id,
-                user_id: req.session.user_id,
-            })
-            .then(dbCommentData => res.json(dbCommentData))
-            .catch(err => {
-                console.log(err);
-                res.status(400).json(err);
-            })
+router.put("/:id", (req, res) => {
+    if(!req.session.user){
+        return res.status(401).json({msg:"Please login first!"})
     }
-});
-
-router.put('/:id', withAuth, (req, res) => {
-    Comment.update({
-        comment_text: req.body.comment_text
-    }, {
-        where: {
-            id: req.params.id
-        }
-    }).then(dbCommentData => {
-        if (!dbCommentData) {
-            res.status(404).json({ message: 'No comment found with this id' });
-            return;
-        }
-        res.json(dbCommentData);
-    }).catch(err => {
-        console.log(err);
-        res.status(500).json(err);
+    Comment.update(req.body, {
+      where: {
+        id: req.params.id
+      }
+    }).then(updatedComment => {
+      res.json(updatedComment);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ msg: "an error occured", err });
     });
 });
 
-router.delete('/:id', withAuth, (req, res) => {
+router.delete("/:id", (req, res) => {
+    if(!req.session.user){
+        return res.status(401).json({msg:"Please login first!"})
+    }
     Comment.destroy({
-        where: {
-            id: req.params.id
-        }
-    }).then(dbCommentData => {
-        if (!dbCommentData) {
-            res.status(404).json({ message: 'No comment found with this id' });
-            return;
-        }
-        res.json(dbCommentData);
-    }).catch(err => {
-        console.log(err);
-        res.status(500).json(err);
+      where: {
+        id: req.params.id
+      }
+    }).then(delComment => {
+      res.json(delComment);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ msg: "an error occured", err });
     });
 });
+  
 module.exports = router;
