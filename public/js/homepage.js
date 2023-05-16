@@ -1,4 +1,4 @@
-var existingBlogs = document.querySelector("#existingblogs")
+var homepagePosts = document.querySelector("#existingblogs")
 var createNew = document.querySelector("#createNew")
 var newPost = document.querySelector("#newpost")
 var newBlog = document.querySelector('#newBlog')
@@ -12,7 +12,7 @@ hideCreateNew();
 newPost.addEventListener("submit",event=>{
     event.preventDefault()
     console.log('click')
-    existingBlogs.hidden=true;
+    homepagePosts.hidden=true;
     newPost.hidden =true;
     createNew.hidden =false;
 });
@@ -21,7 +21,6 @@ newBlog.addEventListener("submit", event => {
     var title = document.querySelector("#title").value;
     var content = document.querySelector("#content").value
     event.preventDefault()
-    console.log('you clicked me')
     if (!title || !content) {
         alert('Please enter both title and content')
         return;
@@ -30,7 +29,7 @@ newBlog.addEventListener("submit", event => {
         title: title,
         content: content,
     }
-    fetch("/api/blogs",{
+    fetch("/api/posts",{
         method:"POST",
         body:JSON.stringify(blogObj),
         headers:{

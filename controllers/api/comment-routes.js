@@ -3,7 +3,7 @@ const router = express.Router();
 const {User, Post, Comment} = require("../../models");
 
 router.get("/", (req, res) => {
-    Comment.findAll({include:[User, Blog]})
+    Comment.findAll({include:[User, Post]})
       .then(comments => {
         res.json(comments);
       })
@@ -14,7 +14,7 @@ router.get("/", (req, res) => {
   });
 
 router.get("/:id", (req, res) => {
-    Comment.findByPk(req.params.id,{include:[User, Blog]})
+    Comment.findByPk(req.params.id,{include:[User, Post]})
       .then(comments => {
         res.json(comments);
       })

@@ -1,15 +1,15 @@
 document.querySelector("#update").addEventListener("click",event=>{
     event.preventDefault();
-    const blogId = document.querySelector("#hiddenBlogId").value;
-    const editBlog = {
+    const postId = document.querySelector("#hiddenBlogId").value;
+    const editPost = {
         title:document.querySelector("#editedTitle").value,
         content:document.querySelector("#editedContent").value,
     }
-    console.log(blogId);
-    console.log(editBlog);
-    fetch((`/api/blogs/${blogId}`),{
+    console.log(postId);
+    console.log(editPost);
+    fetch((`/api/blogs/${postId}`),{
         method:"PUT",
-        body:JSON.stringify(editBlog),
+        body:JSON.stringify(editPost),
         headers:{
             "Content-Type":"application/json"
         }
@@ -25,8 +25,8 @@ document.querySelector("#update").addEventListener("click",event=>{
 
 document.querySelector("#delete").addEventListener("click",event=>{
     event.preventDefault();
-    const blogId = document.querySelector("#hiddenBlogId").value;
-    fetch((`/api/blogs/${blogId}`),{
+    const postId = document.querySelector("#hiddenBlogId").value;
+    fetch((`/api/blogs/${postId}`),{
         method:"DELETE",
     }).then(res=>{
         if(res.ok){

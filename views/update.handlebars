@@ -2,9 +2,9 @@
 <section id="currentBlogUpdate">
   <section class="card">
       <div class="card-body">
-        <h3 class="card-title">{{hbsBlog.title}}</h3> 
-        <h5>Posted on {{hbsBlog.createdAt}}</h5>
-        <p class="card-text">{{hbsBlog.content}}</p>
+        <h3 class="card-title">{{hbsPost.title}}</h3> 
+        <h5>Posted on {{hbsPost.createdAt}}</h5>
+        <p class="card-text">{{hbsPost.content}}</p>
     </div>
   </section>
 </section>
@@ -15,12 +15,12 @@
   <form id="editedBlog">
     <div class="card-text"></div>
       <label for="editedTitle">Title</label><br>
-      <input type="text" id="editedTitle" placeholder="{{hbsBlog.title}}" value="{{hbsBlog.title}}">
+      <input type="text" id="editedTitle" placeholder="{{hbsPost.title}}" value="{{hbsPost.title}}">
     </div>
     <div class="card-text"></div>
       <label for="editedContent">Content</label>
-    <textarea id="editedContent">{{hbsBlog.content}}</textarea>
-    <input id="hiddenBlogId" hidden="true" value="{{hbsBlog.id}}"></input>
+    <textarea id="editedContent">{{hbsPost.content}}</textarea>
+    <input id="hiddenBlogId" hidden="true" value="{{hbsPost.id}}"></input>
     </div>
     <button id="update">Update Post</button>
     <button id="delete">Delete Post</button>
